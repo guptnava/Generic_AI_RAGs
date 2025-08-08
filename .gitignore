@@ -1,0 +1,25 @@
+# Ignore Python virtual environments
+api/venv/
+
+# Ignore npm modules
+client/node_modules/
+server/node_modules/
+api/local*/
+
+# Ignore Python cache and logs
+__pycache__/
+*.pyc
+*.pyo
+*.log
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore OS and editor files
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.bak
+

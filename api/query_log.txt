@@ -1,0 +1,167 @@
+
+---
+[2025-08-02 15:04:34] IP: 127.0.0.1, UA: curl/8.7.1, Model: llama3.2:1b
+Prompt: list all sales
+Generated SQL: SELECT DISTINCT T1.region, T1.total_amount FROM sales AS T1 INNER JOIN ( SELECT sale_id, SUM(total_amount) AS total_sales FROM sales GROUP BY sale_id ORDER BY total_sales DESC LIMIT 1 ) AS T2 ON T1.sale_id = T2.sale_id
+
+---
+[2025-08-02 15:06:01] IP: 127.0.0.1, UA: curl/8.7.1, Model: llama3.2:1b
+Prompt: Get total sales amount per region
+Generated SQL: SELECT T1.region, SUM(T2.total_amount) AS total_sales 
+FROM sales T1 INNER JOIN (
+    SELECT sale_id, region, SUM(total_amount) AS total_sales
+    FROM sales
+    GROUP BY sale_id, region
+) T2 ON T1.sale_id = T2.sale_id 
+GROUP BY T1.region
+
+---
+[2025-08-02 15:09:55] IP: 127.0.0.1, UA: curl/8.7.1, Model: llama3.2:1b
+Prompt: Get total sales amount per region
+Generated SQL: SELECT T1.region, SUM(T2.total_amount) AS total_sales 
+FROM sales T1 
+JOIN ( SELECT region, SUM(total_amount) AS total_sales 
+      FROM sales 
+      GROUP BY region ) T2 
+ON T1.region = T2.region 
+GROUP BY T1.region 
+
+Top K: 1
+
+---
+[2025-08-02 15:19:15] IP: 127.0.0.1, UA: curl/8.7.1, Model: llama3.2:1b
+Prompt: Get total sales amount per region
+Generated SQL: SELECT T1.region, SUM(T2.total_amount) AS total_sales 
+FROM sales T1 
+JOIN (SELECT region, SUM(total_amount) AS total_sales FROM sales GROUP BY region ORDER BY total_sales DESC LIMIT 5) T2 
+ON T1.region = T2.region
+ORDER BY T1.region
+
+---
+[2025-08-02 15:23:45] IP: 127.0.0.1, UA: curl/8.7.1, Model: llama3.2:1b
+Prompt: Get total sales amount per region
+Generated SQL: SELECT T1.region, SUM(T2.total_amount) AS total_sales 
+FROM sales T1 
+JOIN (SELECT region, SUM(total_amount) AS total_sales FROM sales GROUP BY region ORDER BY total_sales DESC LIMIT 5) T2 
+ON T1.region = T2.region
+ORDER BY T1.region
+
+---
+[2025-08-02 15:24:17] IP: 127.0.0.1, UA: curl/8.7.1, Model: llama3.2:1b
+Prompt: show me all products
+Generated SQL: SELECT T1.product_id, T2.total_amount FROM sales AS T1 INNER JOIN ( SELECT product_id, SUM(total_amount) AS total_sales FROM sales GROUP BY product_id ORDER BY total_sales DESC LIMIT 5 ) AS T2 ON T1.product_id = T2.product_id
+
+---
+[2025-08-02 16:43:34] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-02 16:44:38] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all employees
+SQL: SELECT * FROM employees
+
+---
+[2025-08-02 16:53:29] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-02 16:55:26] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-02 16:56:51] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 16:46:35] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 16:53:37] IP: 127.0.0.1, UA: curl/8.7.1, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 17:16:40] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 17:44:08] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all employees
+SQL: SELECT * FROM employees
+
+---
+[2025-08-03 17:53:31] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 19:13:25] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 19:15:32] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 19:16:37] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-03 19:18:17] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 08:12:04] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 08:30:53] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 08:36:52] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 08:37:44] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 08:57:13] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all employees
+SQL: SELECT * FROM employees
+
+---
+[2025-08-06 08:57:34] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 14:23:18] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 14:27:10] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-06 19:24:33] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales

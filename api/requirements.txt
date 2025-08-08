@@ -1,0 +1,16 @@
+flask
+python-dotenv
+langchain
+langchain-community
+sqlalchemy
+oracledb==1.4.2
+ollama
+diskcache
+llama-index 
+llama-index-llms-ollama
+llama-index-llms-langchain
+fastapi 
+uvicorn
+sentence-transformers
+numpy<2
+

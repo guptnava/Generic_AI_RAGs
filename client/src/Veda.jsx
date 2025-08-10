@@ -91,7 +91,8 @@ export default function App() {
   }, [messages]);
 
   // Utility to convert JSON array of objects to markdown table
-  function jsonToMarkdownTable(jsonArray) {
+  const jsonToMarkdownTable = useMemo(() => {
+  return (jsonArray, limit = 10) => {
     if (!Array.isArray(jsonArray) || jsonArray.length === 0) return '';
 
     const headers = Object.keys(jsonArray[0]);
@@ -99,12 +100,12 @@ export default function App() {
     const separatorRow = `| ${headers.map(() => '---').join(' | ')} |`;
 
     const rows = jsonArray
+      .slice(0, limit)
       .map((obj) =>
         headers
           .map((header) => {
             const val = obj[header];
-            if (typeof val === 'object') return JSON.stringify(val);
-            return String(val);
+            return typeof val === 'object' ? JSON.stringify(val) : String(val);
           })
           .join(' | ')
       )
@@ -112,10 +113,17 @@ export default function App() {
       .join('\n');
 
     return [headerRow, separatorRow, rows].join('\n');
-  }
+  };
+}, []);
+
+    const [hasTableData, setHasTableData] = useState(false);
 
   async function sendMessage() {
     if (!input.trim()) return;
+
+ 
+     setHasTableData(false);
+     setExcelData([]);
 
     if (!isCodeRelated(input.trim()) & interactionMode === 'direct') {
       setMessages((prev) => [
@@ -158,53 +166,59 @@ export default function App() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
 
-      if ((interactionMode === 'database') ||(interactionMode === 'langchainprompt')||(interactionMode === 'restful')||(interactionMode === 'embedded')) {
-        // Streaming NDJSON (newline-delimited JSON) from DB
-        let buffer = '';
-        let allData = [];
+      if (['database', 'langchainprompt', 'restful', 'embedded'].includes(interactionMode)) {
+  let buffer = '';
+  let allData = [];
+  const updateInterval = setInterval(() => {
+    if (buffer) {
+      setMessages((prev) => {
+        const allButLast = prev.slice(0, -1);
+        const updatedLast = { ...prev[prev.length - 1], content: currentResponse, model };
+        return [...allButLast, updatedLast];
+      });
+      buffer = ''; // Clear buffer after update
+    }
+  }, 100);
 
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop(); // Keep last partial line for next chunk
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
 
-          for (const line of lines) {
-            if (!line.trim()) continue;
+      for (const line of lines) {
+        if (!line.trim()) continue;
 
-            try {
-              const json = JSON.parse(line);
-              // Accumulate JSON objects (expecting an array of objects)
-              if (Array.isArray(json)) {
-                allData = allData.concat(json);
-              } else if (typeof json === 'object') {
-                allData.push(json);
-              } else {
-                // fallback: stringify
-                allData.push({ data: json });
-              }
-
-              // Convert accumulated data to markdown table and update
-              currentResponse = jsonToMarkdownTable(allData);
-              setExcelData(allData);
-
-              setMessages((prev) => {
-                const allButLast = prev.slice(0, -1);
-                const updatedLast = {
-                  ...prev[prev.length - 1],
-                  content: currentResponse.trim(),
-                  model,
-                };
-                return [...allButLast, updatedLast];
-              });
-            } catch (err) {
-              console.warn('⚠️ JSON parse error:', err, line);
-            }
+        try {
+          const json = JSON.parse(line);
+          if (Array.isArray(json)) {
+            allData = allData.concat(json);
+          } else if (typeof json === 'object') {
+            allData.push(json);
+          } else {
+            allData.push({ data: json });
           }
+
+          currentResponse = jsonToMarkdownTable(allData, 10);
+          setExcelData(allData);
+          setHasTableData(true);
+        } catch (err) {
+          console.warn('⚠️ JSON parse error:', err, line);
+          setMessages((prev) => [
+            ...prev,
+            { role: 'assistant', content: `⚠️ Error parsing response: ${err.message}`, model },
+          ]);
         }
-      } else {
+      }
+    }
+  } finally {
+    clearInterval(updateInterval);
+    setLoading(false);
+  }
+} else {
         // Token streaming (e.g., LLM generation)
         let done = false;
 
@@ -232,12 +246,14 @@ export default function App() {
                     return [...allButLast, updatedLast];
                   });
                 }
+                buffer += token;
               } catch {
                 // ignore invalid JSON chunks
               }
             }
           }
         }
+        
       }
 
       const endTime = performance.now();
@@ -586,12 +602,14 @@ export default function App() {
                 cursor: 'pointer',
               }}
             >
-              <option value="direct">Code Genie</option>
+              <option value="direct">Developer Asistant</option>
               <option value="database">Database - Direct Intent Routes</option>
-              <option value="restful">RESTful - Prompt Engineered & Embedded</option>
-              <option value="langchain">Database - Lang Chained</option>
-              <option value="langchainprompt">Database - Lang Chained & Prompt Engineered</option>
-              <option value="embedded">Database - Lang Chained - Prompt Engineered - Embedded Vectorisation</option>
+              <option value="restful">API Assistant (Trained)</option>
+              <option value="langchain">Database Assistant (Un-Trained)</option>
+              <option value="langchainprompt">Database Assistant (Partially Trained)</option>
+              <option value="embedded">Database Assistant (Fully Trained)</option>
+               <option value="webscrape">Documentation Assistant</option>
+                <option value="riskdata">Data Analysis Assistant</option>
             </select>
           </div>
         </header>
@@ -632,10 +650,16 @@ export default function App() {
                               Response time: {msg.responseTime}s
                             </div>
                           )}
+                          {!isUser && msg.content.includes('|') && excelData.length > 10 && (
+                            <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '6px' }}>
+                              Showing only first 10 rows. Full data available in downloads below.
+                            </div>
+                          )}
+
                         </div>
                       );
                     })}
-                    {excelData.length > 0 && (
+                    {hasTableData && excelData.length > 0 && (
                     <div className="button-row">
                       <button onClick={() => downloadFile('excel')}>⬇️ Download Excel</button>
                       <button onClick={() => downloadFile('csv')}>⬇️ Download CSV</button>

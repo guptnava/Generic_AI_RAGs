@@ -28,6 +28,15 @@ FLASK_PID5=$!
 FLASK_APP=ai_restful_embedding_prompt_interface.py FLASK_RUN_PORT=5006 flask run &
 FLASK_PID6=$!
 
+
+
+FLASK_APP=ai_confluence_embedding_interface.py FLASK_RUN_PORT=5007 flask run &
+FLASK_PID7=$!
+
+FLASK_APP=ai_data_analysis_assistant.py FLASK_RUN_PORT=5008 flask run &
+FLASK_PID8=$!
+
+
 cd ..
 
 # Start Node.js server

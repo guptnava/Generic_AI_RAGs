@@ -13,4 +13,13 @@ fastapi
 uvicorn
 sentence-transformers
 numpy<2
+requests
+beautifulsoup4
+cx_Oracle
+
+pyhive[hive]
+pandas
+pyarrow
+kerberos
+
 

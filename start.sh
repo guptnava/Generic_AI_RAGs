@@ -30,11 +30,14 @@ FLASK_PID6=$!
 
 
 
-FLASK_APP=ai_confluence_embedding_interface.py FLASK_RUN_PORT=5007 flask run &
-FLASK_PID7=$!
+#FLASK_APP=ai_confluence_embedding_interface.py FLASK_RUN_PORT=5007 flask run &
+#FLASK_PID7=$!
 
-FLASK_APP=ai_data_analysis_assistant.py FLASK_RUN_PORT=5008 flask run &
-FLASK_PID8=$!
+#FLASK_APP=ai_data_analysis_assistant.py FLASK_RUN_PORT=5008 flask run &
+#FLASK_PID8=$!
+
+FLASK_APP=ai_db_langchain_embedding_prompt_narrated_interface.py FLASK_RUN_PORT=5009 flask run &
+FLASK_PID9=$!
 
 
 cd ..
@@ -60,6 +63,6 @@ cd ..
 echo "🔄 All services running. Press Ctrl+C to stop."
 
 # Trap Ctrl+C and clean up
-trap "echo '🛑 Stopping services...'; kill $FLASK_PID $FLASK_PID1 $FLASK_PID2 $FLASK_PID3 $FLASK_PID4 $FLASK_PID5 $FLASK_PID6 $NODE_PID $FRONTEND_PID; exit" INT
+trap "echo '🛑 Stopping services...'; kill $FLASK_PID $FLASK_PID1 $FLASK_PID2 $FLASK_PID3 $FLASK_PID4 $FLASK_PID5 $FLASK_PID6 $FLASK_PID7 $FLASK_PID8 $FLASK_PID9 $NODE_PID $FRONTEND_PID; exit" INT
 
 wait

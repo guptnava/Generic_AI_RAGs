@@ -155,7 +155,7 @@ export default function App() {
           model,
           prompt: userMessage.content,
           mode: interactionMode,
-          stream: interactionMode === 'direct' || interactionMode === 'database' || interactionMode === 'langchain' || interactionMode === 'langchainprompt'|| interactionMode === 'restful'|| interactionMode === 'embedded',
+          stream: interactionMode === 'direct' || interactionMode === 'database' || interactionMode === 'langchain' || interactionMode === 'langchainprompt'|| interactionMode === 'restful'|| interactionMode === 'embedded' || interactionMode === 'embedded_narrated',
         }),
       });
 
@@ -166,9 +166,10 @@ export default function App() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
 
-      if (['database', 'langchainprompt', 'restful', 'embedded'].includes(interactionMode)) {
+      if (['database', 'langchainprompt', 'restful', 'embedded', 'embedded_narrated'].includes(interactionMode)) {
   let buffer = '';
   let allData = [];
+  let narrationText = null;
   const updateInterval = setInterval(() => {
     if (buffer) {
       setMessages((prev) => {
@@ -194,17 +195,28 @@ export default function App() {
 
         try {
           const json = JSON.parse(line);
-          if (Array.isArray(json)) {
-            allData = allData.concat(json);
-          } else if (typeof json === 'object') {
-            allData.push(json);
+
+          if (json._narration) {
+            // ✅ Store narration but also update live content
+            narrationText = json._narration;
           } else {
-            allData.push({ data: json });
+            if (Array.isArray(json)) {
+              allData = allData.concat(json);
+            } else if (typeof json === 'object') {
+              allData.push(json);
+            } else {
+              allData.push({ data: json });
+            }
+            setExcelData(allData);
+            setHasTableData(true);
           }
 
+          // ✅ Always update currentResponse with table + narration if available
           currentResponse = jsonToMarkdownTable(allData, 10);
-          setExcelData(allData);
-          setHasTableData(true);
+          if (narrationText) {
+            currentResponse += `\n\n📝 ${narrationText}`;
+          }
+
         } catch (err) {
           console.warn('⚠️ JSON parse error:', err, line);
           setMessages((prev) => [
@@ -214,6 +226,18 @@ export default function App() {
         }
       }
     }
+
+    // ✅ Final update after streaming ends
+    setMessages((prev) => {
+      const allButLast = prev.slice(0, -1);
+      const updatedLast = {
+        ...prev[prev.length - 1],
+        content: currentResponse,
+        model,
+      };
+      return [...allButLast, updatedLast];
+    });
+
   } finally {
     clearInterval(updateInterval);
     setLoading(false);
@@ -558,11 +582,11 @@ export default function App() {
               alt="Deutsche Bank Logo"
               style={{ height: '36px' }}
             />
-            <div style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>CodeNova</div>
+            <div style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>AI-Nova</div>
           </div>
 
           <div>
-            <label style={{ fontSize: '1rem', fontWeight: 'bold'}} htmlFor="model-select">AI Model:</label>
+            <label style={{ fontSize: '1rem', fontWeight: 'bold'}} htmlFor="model-select">Model:</label>
             <select
               id="model-select"
               value={model}
@@ -608,8 +632,9 @@ export default function App() {
               <option value="langchain">Database Assistant (Un-Trained)</option>
               <option value="langchainprompt">Database Assistant (Partially Trained)</option>
               <option value="embedded">Database Assistant (Fully Trained)</option>
-               <option value="webscrape">Documentation Assistant</option>
-                <option value="riskdata">Data Analysis Assistant</option>
+              <option value="webscrape">Documentation Assistant</option>
+              <option value="riskdata">Data Analysis Assistant</option>
+              <option value="embedded_narrated">Database Assistant with Narration</option>
             </select>
           </div>
         </header>

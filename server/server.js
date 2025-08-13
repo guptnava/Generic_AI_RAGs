@@ -10,8 +10,14 @@ import path from 'path';
 
 
 const app = express();
+
+
 app.use(cors());
-app.use(express.json());
+
+// Increase JSON body limit (example: 10 MB)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
 
 const FLASK_DATABASE_INTENT_URL = 'http://127.0.0.1:5000';
 const FLASK_DATABASE_LANGCHAIN_URL = 'http://127.0.0.1:5001';
@@ -19,7 +25,7 @@ const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_URL = 'http://127.0.0.1:5002';
 const FLASK_DATABASE_LLAMAINDEX_PROMPT_ENG_URL = 'http://127.0.0.1:5003';
 const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_URL = 'http://127.0.0.1:5004';
 const FLASK_RESTFUL_PROMPT_ENG_EMBD_URL = 'http://127.0.0.1:5006';
-
+const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_NARRATED_URL = 'http://127.0.0.1:5009';
 
 const OLLAMA_API_URL = 'http://localhost:11434'; // Ollama HTTP API URL
 
@@ -54,10 +60,11 @@ app.post('/api/generate', async (req, res) => {
   else if (mode === 'restful') flask_endpoint = `${FLASK_RESTFUL_PROMPT_ENG_EMBD_URL}/query`;
   else if (mode === 'embedded') flask_endpoint = `${FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_URL}/query`;
   else if (mode === 'llamaindex') flask_endpoint = `${FLASK_DATABASE_LLAMAINDEX_PROMPT_ENG_URL}/query`;
-
+  else if (mode === 'embedded_narrated') flask_endpoint = `${FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_NARRATED_URL}/query`;
+ 
   
   try {
-    if (["database", "langchainprompt", "restful", "embedded"].includes(mode))  {
+    if (["database", "langchainprompt", "restful", "embedded", "embedded_narrated"].includes(mode))  {
       // Proxy to Flask API for DB queries with caching and logging
      /*  const cached = getCache(prompt);
       if (cached) {
@@ -258,21 +265,58 @@ app.post('/api/download-pdf', async (req, res) => {
   doc.pipe(res);
 
   const headers = Object.keys(data[0]);
-  doc.fontSize(16).text('Chatbot Data Export', { align: 'center' }).moveDown();
-  doc.font('Helvetica-Bold').fontSize(12);
-  headers.forEach(h => doc.text(h, { continued: true, width: 100 }));
-  doc.moveDown();
+  const cellPadding = 5;
 
-  doc.font('Helvetica').fontSize(10);
+  // Title
+  doc.fontSize(16).text('Chatbot Data Export', { align: 'center' }).moveDown(1.5);
+
+  // Table dimensions
+  const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  const colWidth = pageWidth / headers.length;
+  let y = doc.y;
+
+  // Function to draw a cell
+  const drawCell = (text, x, y, width, height, isHeader = false) => {
+    // Border
+    doc.rect(x, y, width, height).stroke();
+
+    // Text
+    doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica')
+      .fontSize(isHeader ? 12 : 10)
+      .text(text, x + cellPadding, y + cellPadding, {
+        width: width - cellPadding * 2,
+        height: height - cellPadding * 2,
+        align: 'left',
+        valign: 'center'
+      });
+  };
+
+  // Draw header row
+  const headerHeight = 20;
+  headers.forEach((h, i) => {
+    drawCell(h, doc.page.margins.left + i * colWidth, y, colWidth, headerHeight, true);
+  });
+  y += headerHeight;
+
+  // Draw data rows
+  const rowHeight = 20;
   data.forEach(row => {
-    headers.forEach(key => {
-      doc.text(String(row[key] ?? ''), { continued: true, width: 100 });
+    headers.forEach((key, i) => {
+      drawCell(String(row[key] ?? ''), doc.page.margins.left + i * colWidth, y, colWidth, rowHeight, false);
     });
-    doc.moveDown();
+    y += rowHeight;
+
+    // Page break if needed
+    if (y + rowHeight > doc.page.height - doc.page.margins.bottom) {
+      doc.addPage();
+      y = doc.page.margins.top;
+    }
   });
 
   doc.end();
 });
+
+
 
 
 // Health check endpoint that proxies Flask health

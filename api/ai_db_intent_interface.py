@@ -38,7 +38,7 @@ def log_query(intent, sql, user_agent, client_ip, model):
 
 # Predefined intent-to-SQL map
 INTENT_SQL_MAP = {
-    "list all employees": "SELECT * FROM employees",
+    "list all employees": "SELECT * FROM user_tables",
     "list all sales": "SELECT * FROM sales",
     "top 5 sales by amount": "SELECT * FROM sales ORDER BY amount",
     "employee count": "SELECT COUNT(*) AS employee_count FROM employees",

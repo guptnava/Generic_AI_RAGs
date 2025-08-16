@@ -39,6 +39,8 @@ FLASK_PID6=$!
 FLASK_APP=ai_db_langchain_embedding_prompt_narrated_interface.py FLASK_RUN_PORT=5009 flask run &
 FLASK_PID9=$!
 
+FLASK_APP=ai_generic_database_rag_agent.py FLASK_RUN_PORT=5010 flask run &
+FLASK_PID10=$!
 
 cd ..
 
@@ -63,6 +65,6 @@ cd ..
 echo "🔄 All services running. Press Ctrl+C to stop."
 
 # Trap Ctrl+C and clean up
-trap "echo '🛑 Stopping services...'; kill $FLASK_PID $FLASK_PID1 $FLASK_PID2 $FLASK_PID3 $FLASK_PID4 $FLASK_PID5 $FLASK_PID6 $FLASK_PID7 $FLASK_PID8 $FLASK_PID9 $NODE_PID $FRONTEND_PID; exit" INT
+trap "echo '🛑 Stopping services...'; kill $FLASK_PID $FLASK_PID1 $FLASK_PID2 $FLASK_PID3 $FLASK_PID4 $FLASK_PID5 $FLASK_PID6 $FLASK_PID7 $FLASK_PID8 $FLASK_PID9 $FLASK_PID10 $NODE_PID $FRONTEND_PID; exit" INT
 
 wait

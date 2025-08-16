@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { PanelLeft, X, Settings, FileSpreadsheet, FilePdf, FileText, Save } from 'lucide-react';
+import { PanelLeft, X, Settings } from 'lucide-react';
 import * as htmlToImage from 'html-to-image';
 
 
@@ -23,7 +23,7 @@ const components = {
   },
   table({ node, ...props }) {
     return (
-      <div className="table-container">
+      <div style={{ overflowX: 'auto', marginTop: '10px', marginBottom: '10px' }}>
         <table
           style={{
             borderCollapse: 'collapse',
@@ -602,35 +602,19 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  justifyContent: 'center',
+                  gap: '8px'
                 }}
               >
-                <Save size={16} /> Save Graph
+                ⬇️ Save Graph
               </button>
             )}
           </>
         )}
       </div>
-      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <button onClick={() => onDownloadFile('excel', excelData)}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileSpreadsheet size={16} />
-            <span>Download as Excel</span>
-          </div>
-        </button>
-        <button onClick={() => onDownloadFile('csv', excelData)}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileText size={16} />
-            <span>Download as CSV</span>
-          </div>
-        </button>
-        <button onClick={() => onDownloadFile('pdf', excelData)}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FilePdf size={16} />
-            <span>Download as PDF</span>
-          </div>
-        </button>
+      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+        <button onClick={() => onDownloadFile('excel', excelData)}>⬇️ Download Excel</button>
+        <button onClick={() => onDownloadFile('csv', excelData)}>⬇️ Download CSV</button>
+        <button onClick={() => onDownloadFile('pdf', excelData)}>⬇️ Download PDF</button>
       </div>
       {viewMode === 'graph' && currentGraphData && (
         <div ref={graphRef}>
@@ -763,94 +747,100 @@ export default function App() {
         let allData = [];
         let narrationText = null;
 
-        while (true) {
-          const { value, done } = await reader.read();
-          if (done) break;
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop();
-
-          for (const line of lines) {
-            if (!line.trim()) continue;
-
-            try {
-              const json = JSON.parse(line);
-
-              if (json._narration) {
-                narrationText = json._narration;
-              } else {
-                if (Array.isArray(json)) {
-                  allData = allData.concat(json);
-                } else if (typeof json === 'object') {
-                  allData.push(json);
-                } else {
-                  allData.push({ data: json });
-                }
-                tableData = allData;
-              }
-
-              currentResponseContent = jsonToMarkdownTable(allData, 10);
-              if (narrationText) {
-                currentResponseContent += `\n\n📝 ${narrationText}`;
-              }
-
-            } catch (err) {
-              console.warn('⚠️ JSON parse error:', err, line);
-              currentResponseContent = `⚠️ Error parsing response: ${err.message}`;
-              break;
-            }
-          }
-          setCurrentStreamingMessage(prev => ({ ...prev, content: currentResponseContent, tableData: tableData.length > 0 ? tableData : null }));
-        }
-
-        const endTime = performance.now();
-        const elapsed = ((endTime - startTime) / 1000).toFixed(2);
-        
-        setMessages(prev => [...prev, {
-          ...currentStreamingMessage,
-          content: currentResponseContent,
-          tableData: tableData.length > 0 ? tableData : null,
-          responseTime: elapsed
-        }]);
-        setCurrentStreamingMessage(null);
-        
-      } else {
-        while (true) {
-          const { value, done: doneReading } = await reader.read();
-          if (doneReading) break;
-          
-          if (value) {
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n').filter((line) => line.trim());
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
 
             for (const line of lines) {
-              const clean = line.replace(/^data:\s*/, '').trim();
-              if (clean === '[DONE]') continue;
+              if (!line.trim()) continue;
 
               try {
-                const data = JSON.parse(clean);
-                const token = data.response;
+                const json = JSON.parse(line);
 
-                if (token) {
-                  currentResponseContent += token;
-                  setCurrentStreamingMessage(prev => ({ ...prev, content: currentResponseContent }));
+                if (json._narration) {
+                  narrationText = json._narration;
+                } else {
+                  if (Array.isArray(json)) {
+                    allData = allData.concat(json);
+                  } else if (typeof json === 'object') {
+                    allData.push(json);
+                  } else {
+                    allData.push({ data: json });
+                  }
+                  tableData = allData;
                 }
-              } catch {
+
+                currentResponseContent = jsonToMarkdownTable(allData, 10);
+                if (narrationText) {
+                  currentResponseContent += `\n\n📝 ${narrationText}`;
+                }
+
+              } catch (err) {
+                console.warn('⚠️ JSON parse error:', err, line);
+                currentResponseContent = `⚠️ Error parsing response: ${err.message}`;
+                break;
+              }
+            }
+            setCurrentStreamingMessage(prev => ({ ...prev, content: currentResponseContent, tableData: tableData.length > 0 ? tableData : null }));
+          }
+        } finally {
+          const endTime = performance.now();
+          const elapsed = ((endTime - startTime) / 1000).toFixed(2);
+          
+          // Add the final message to the main message array
+          setMessages(prev => [...prev, {
+            ...currentStreamingMessage,
+            content: currentResponseContent,
+            tableData: tableData.length > 0 ? tableData : null,
+            responseTime: elapsed
+          }]);
+          setCurrentStreamingMessage(null);
+        }
+      } else {
+        try {
+          let done = false;
+          while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+
+            if (value) {
+              const chunk = decoder.decode(value);
+              const lines = chunk.split('\n').filter((line) => line.trim());
+
+              for (const line of lines) {
+                const clean = line.replace(/^data:\s*/, '').trim();
+                if (clean === '[DONE]') continue;
+
+                try {
+                  const data = JSON.parse(clean);
+                  const token = data.response;
+
+                  if (token) {
+                    currentResponseContent += token;
+                    setCurrentStreamingMessage(prev => ({ ...prev, content: currentResponseContent }));
+                  }
+                } catch {
+                }
               }
             }
           }
+        } finally {
+          const endTime = performance.now();
+          const elapsed = ((endTime - startTime) / 1000).toFixed(2);
+          
+          // Add the final message to the main message array
+          setMessages(prev => [...prev, {
+            ...currentStreamingMessage,
+            content: currentResponseContent,
+            responseTime: elapsed
+          }]);
+          setCurrentStreamingMessage(null);
         }
-        
-        const endTime = performance.now();
-        const elapsed = ((endTime - startTime) / 1000).toFixed(2);
-        
-        setMessages(prev => [...prev, {
-          ...currentStreamingMessage,
-          content: currentResponseContent,
-          responseTime: elapsed
-        }]);
-        setCurrentStreamingMessage(null);
       }
 
     } catch (err) {
@@ -976,26 +966,6 @@ export default function App() {
           background-color: #0e639c;
           border-radius: 4px;
         }
-        
-        /* Table Scrollbar Styles */
-        .table-container {
-          overflow-x: auto;
-          margin-top: 10px;
-          margin-bottom: 10px;
-          scrollbar-width: thin; /* For Firefox */
-          scrollbar-color: #0e639c transparent; /* For Firefox */
-        }
-        .table-container::-webkit-scrollbar {
-          height: 8px; /* For horizontal scrollbar in Chrome/Safari */
-        }
-        .table-container::-webkit-scrollbar-thumb {
-          background-color: #0e639c;
-          border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-track {
-          background-color: transparent;
-        }
-
 
         header {
           background-color: #0e639c;

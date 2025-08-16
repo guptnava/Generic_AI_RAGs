@@ -26,6 +26,7 @@ const FLASK_DATABASE_LLAMAINDEX_PROMPT_ENG_URL = 'http://127.0.0.1:5003';
 const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_URL = 'http://127.0.0.1:5004';
 const FLASK_RESTFUL_PROMPT_ENG_EMBD_URL = 'http://127.0.0.1:5006';
 const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_NARRATED_URL = 'http://127.0.0.1:5009';
+const FLASK_DATABASE_GENERIC_RAG_URL = 'http://127.0.0.1:5010';
 
 const OLLAMA_API_URL = 'http://localhost:11434'; // Ollama HTTP API URL
 
@@ -61,10 +62,10 @@ app.post('/api/generate', async (req, res) => {
   else if (mode === 'embedded') flask_endpoint = `${FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_URL}/query`;
   else if (mode === 'llamaindex') flask_endpoint = `${FLASK_DATABASE_LLAMAINDEX_PROMPT_ENG_URL}/query`;
   else if (mode === 'embedded_narrated') flask_endpoint = `${FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_NARRATED_URL}/query`;
- 
+  else if (mode === 'generic_rag') flask_endpoint = `${FLASK_DATABASE_GENERIC_RAG_URL}/query`;
   
   try {
-    if (["database", "langchainprompt", "restful", "embedded", "embedded_narrated"].includes(mode))  {
+    if (["database", "langchainprompt", "restful", "embedded", "embedded_narrated", "generic_rag"].includes(mode))  {
       // Proxy to Flask API for DB queries with caching and logging
      /*  const cached = getCache(prompt);
       if (cached) {

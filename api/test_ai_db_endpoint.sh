@@ -14,3 +14,8 @@ curl -X POST http://127.0.0.1:5000/query \
 curl -X POST http://127.0.0.1:5000/query \
      -H "Content-Type: application/json" \
      -d '{"prompt": "employee count"}'
+
+
+     curl -X POST http://127.0.0.1:5010/query \
+     -H "Content-Type: application/json" \
+     -d '{"prompt": "show all reports" , "model_name": "llama3.2:1b" }'

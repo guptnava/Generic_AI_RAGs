@@ -1,10 +1,11 @@
 # Ignore Python virtual environments
 api/venv/
+oracle*/venv/
 
 # Ignore npm modules
 client/node_modules/
 server/node_modules/
-#api/local*/
+api/local*/
 
 # Ignore Python cache and logs
 __pycache__/

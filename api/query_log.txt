@@ -1030,3 +1030,13 @@ SQL: SELECT * FROM sales
 [2025-08-16 22:01:38] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
 Intent: list all employees
 SQL: SELECT * FROM user_tables
+
+---
+[2025-08-17 09:49:45] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-17 09:50:35] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all employees
+SQL: SELECT * FROM user_tables

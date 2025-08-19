@@ -613,7 +613,7 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
       </div>
       <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
        <button 
-            onClick={() => onDownloadFile('csv', excelData)} 
+            onClick={() => onDownloadFile('excel', excelData)} 
             style={{ fontSize: "15px", fontFamily: "Arial, sans-serif" }}
             >
             {/* <img 
@@ -621,7 +621,7 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
                 alt="Excel icon" 
                 style={{ width: "20px", height: "20px", marginRight: "8px" }} 
             /> */}
-            ⬇️ Download CSV
+            ⬇️ Download Excel
         </button>
         <button onClick={() => onDownloadFile('csv', excelData)}>⬇️ Download CSV</button>
         <button onClick={() => onDownloadFile('pdf', excelData)}>⬇️ Download PDF</button>
@@ -1279,6 +1279,7 @@ export default function App() {
             disabled={loading}
             aria-label="Select AI model"
           >
+            <option value="dbLLM">Deutsche Bank - dbLLM</option>
             <option value="llama3.2:1b">LLaMA3.2:1b</option>
             <option value="codellama:7b-instruct">CodeLLaMA:7b-instruct</option>
             <option value="sqlcoder">SQLCoder:7b</option>

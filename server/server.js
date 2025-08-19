@@ -18,17 +18,19 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
+const hostname='0.0.0.0';
+const port = 3000;
 
-const FLASK_DATABASE_INTENT_URL = 'http://127.0.0.1:5000';
-const FLASK_DATABASE_LANGCHAIN_URL = 'http://127.0.0.1:5001';
-const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_URL = 'http://127.0.0.1:5002';
-const FLASK_DATABASE_LLAMAINDEX_PROMPT_ENG_URL = 'http://127.0.0.1:5003';
-const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_URL = 'http://127.0.0.1:5004';
-const FLASK_RESTFUL_PROMPT_ENG_EMBD_URL = 'http://127.0.0.1:5006';
-const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_NARRATED_URL = 'http://127.0.0.1:5009';
-const FLASK_DATABASE_GENERIC_RAG_URL = 'http://127.0.0.1:5010';
+const FLASK_DATABASE_INTENT_URL = `http://${hostname}:5000`;
+const FLASK_DATABASE_LANGCHAIN_URL = `http://${hostname}:5001`;
+const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_URL = `http://${hostname}:5002`;
+const FLASK_DATABASE_LLAMAINDEX_PROMPT_ENG_URL = `http://${hostname}:5003`;
+const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_URL = `http://${hostname}:5004`;
+const FLASK_RESTFUL_PROMPT_ENG_EMBD_URL = `http://${hostname}:5006`;
+const FLASK_DATABASE_LANGCHAIN_PROMPT_ENG_EMBD_NARRATED_URL = `http://${hostname}:5009`;
+const FLASK_DATABASE_GENERIC_RAG_URL = `http://${hostname}:5010`;
 
-const OLLAMA_API_URL = 'http://localhost:11434'; // Ollama HTTP API URL
+const OLLAMA_API_URL = `http://${hostname}:11434`; // Ollama HTTP API URL
 
 const CACHE_EXPIRATION_MS = 30 * 60 * 1000; // 30 minutes cache expiration
 
@@ -265,11 +267,20 @@ app.post('/api/download-pdf', async (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   doc.pipe(res);
 
+  
+
+    // 👉 Register safe fonts (supports full UTF-8)
+  doc.registerFont('Normal', path.join(__dirname, 'fonts', 'DejaVuSans.ttf'));
+  doc.registerFont('Bold', path.join(__dirname, 'fonts', 'DejaVuSans-Bold.ttf'));
+
   const headers = Object.keys(data[0]);
   const cellPadding = 5;
 
   // Title
-  doc.fontSize(16).text('Chatbot Data Export', { align: 'center' }).moveDown(1.5);
+  doc.font('Bold')
+     .fontSize(16)
+     .text('Chatbot Data Export', { align: 'center' })
+     .moveDown(1.5);
 
   // Table dimensions
   const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
@@ -334,7 +345,12 @@ app.get('/health', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Node.js server listening on port ${PORT}`);
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//   console.log(`Node.js server listening on port ${PORT}`);
+// });
+
+
+app.listen(port, hostname,  () => {
+  console.log(`AI-Nova Server Running at http://${hostname}:${port}/`);
 });

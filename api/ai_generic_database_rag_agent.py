@@ -67,7 +67,8 @@ def get_db_conn():
     if ORACLE_DSN:
         dsn = ORACLE_DSN
     else:
-        dsn = f"{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SERVICE}"
+        dsn = f"{ORACLE_HOST}:{ORACLE_PORT}/?service_name={ORACLE_SERVICE}"
+        
         print("dsn=", dsn)
     return oracledb.connect(user=ORACLE_USER, password=ORACLE_PASSWORD, dsn=dsn)
 

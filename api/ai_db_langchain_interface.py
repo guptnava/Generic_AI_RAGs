@@ -32,8 +32,8 @@ db_host = os.getenv("DB_HOST")
 db_port = os.getenv("DB_PORT", "1521")
 db_service = os.getenv("DB_SERVICE")
 
-db_uri = f"oracle+oracledb://{db_user}:{db_password}@{db_host}:{db_port}/{db_service}"
-print(f"Connecting to DB with URI: {db_uri}")
+db_uri = f"oracle+oracledb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT', '1521')}/?service_name={os.getenv('DB_SERVICE')}"
+print("db_uri====", db_uri)
 
 engine = create_engine(
     db_uri,

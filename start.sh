@@ -3,8 +3,8 @@
 echo "🚀 Starting all services..."
 
 #start ollama
-OLLAMA_HOST=0.0.0.0:11434 ollama serve &
-OLLAMA_PID=$!
+#OLLAMA_HOST=0.0.0.0:11434 ollama serve &
+#OLLAMA_PID=$!
 
 # Start Flask API
 echo "🔌 Starting Flask APIs on port 5000/01/02/03/04/05/06..."

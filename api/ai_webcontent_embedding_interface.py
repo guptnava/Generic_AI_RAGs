@@ -34,7 +34,7 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 # Load your local sentence transformer model directly
-embedder = SentenceTransformer('/Users/naveengupta/veda-chatbot/api/local_all-MiniLM-L6-v2')
+embedder = SentenceTransformer(os.getenv('LOCAL_EMBED_MODEL'))
 
 # Wrap it for LlamaIndex / Langchain compatibility
 embedding_model = LangchainEmbedding(embedder)

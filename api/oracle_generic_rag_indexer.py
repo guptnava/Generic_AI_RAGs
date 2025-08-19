@@ -56,9 +56,9 @@ class Settings(BaseModel):
     EMBED_BACKEND: str = os.getenv("EMBED_BACKEND", "openai")  # "openai" or "sbert"
     OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "text-embedding-3-large")
-    LOCAL_MODEL_PATH: str = "/Users/naveengupta/veda-chatbot/api/local_all-MiniLM-L6-v2"
+    LOCAL_MODEL_PATH: str = os.getenv('LOCAL_EMBED_MODEL')
 
-    SBERT_MODEL: str = os.getenv("SBERT_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+    SBERT_MODEL: str = os.getenv('LOCAL_EMBED_MODEL')
 
     # Indexing
     CHUNK_TOKENS: int = int(os.getenv("CHUNK_TOKENS", "350"))
@@ -81,7 +81,7 @@ settings = Settings()
 
 def connect() -> oracledb.Connection:
     # Thin mode by default (no Oracle Client needed). For thick, call oracledb.init_oracle_client()
-    db_uri = f"oracle+oracledb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT', '1521')}/{os.getenv('DB_SERVICE')}"
+    db_uri = f"oracle+oracledb://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT', '1521')}/?service_name={os.getenv('DB_SERVICE')}"
     dsn = f"{settings.ORACLE_HOST}:{settings.ORACLE_PORT}/{settings.ORACLE_SERVICE}"
     conn = oracledb.connect(user=settings.ORACLE_USER, password=settings.ORACLE_PASSWORD, dsn=dsn)
     return conn

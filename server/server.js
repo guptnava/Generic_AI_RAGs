@@ -3,10 +3,17 @@ import fetch from 'node-fetch';
 import cors from 'cors';
 import { fetch as undiciFetch } from 'undici';
 import ExcelJS from 'exceljs'; // ← Add at top
-import PDFDocument from 'pdfkit';
+
 
 import fs from 'fs';
 import path from 'path';
+
+import { fileURLToPath } from 'url';
+
+// 👇 Recreate __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 
 
 const app = express();
@@ -18,7 +25,7 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-const hostname='0.0.0.0';
+const hostname='Naveens-Mac-Pro.local';
 const port = 3000;
 
 const FLASK_DATABASE_INTENT_URL = `http://${hostname}:5000`;
@@ -262,16 +269,28 @@ app.post('/api/download-pdf', async (req, res) => {
     return res.status(400).json({ error: 'No tabular data provided' });
   }
 
+  // Lazy import PDFKit
+  const { default: PDFDocument } = await import('pdfkit');
+
   const doc = new PDFDocument({ margin: 30, size: 'A4' });
   res.setHeader('Content-Type', 'application/pdf');
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   doc.pipe(res);
 
   
+  const normalFontPath = path.join(__dirname, 'fonts', 'DejaVuSans.ttf');
+  const boldFontPath = path.join(__dirname, 'fonts', 'DejaVuSans-Bold.ttf');
+
+  const normalFontBuffer = fs.readFileSync(normalFontPath);
+  const boldFontBuffer   = fs.readFileSync(boldFontPath);
+
+
 
     // 👉 Register safe fonts (supports full UTF-8)
-  doc.registerFont('Normal', path.join(__dirname, 'fonts', 'DejaVuSans.ttf'));
-  doc.registerFont('Bold', path.join(__dirname, 'fonts', 'DejaVuSans-Bold.ttf'));
+  doc.registerFont('Normal', normalFontBuffer );
+  doc.registerFont('Bold', boldFontBuffer);
+
+
 
   const headers = Object.keys(data[0]);
   const cellPadding = 5;
@@ -288,19 +307,16 @@ app.post('/api/download-pdf', async (req, res) => {
   let y = doc.y;
 
   // Function to draw a cell
-  const drawCell = (text, x, y, width, height, isHeader = false) => {
-    // Border
-    doc.rect(x, y, width, height).stroke();
+const drawCell = (text, x, y, width, height, isHeader = false) => {
+  doc.rect(x, y, width, height).stroke();
 
-    // Text
-    doc.font(isHeader ? 'Helvetica-Bold' : 'Helvetica')
-      .fontSize(isHeader ? 12 : 10)
-      .text(text, x + cellPadding, y + cellPadding, {
-        width: width - cellPadding * 2,
-        height: height - cellPadding * 2,
-        align: 'left',
-        valign: 'center'
-      });
+  doc.font(isHeader ? 'Bold' : 'Normal')   // ✅ use registered fonts
+    .fontSize(isHeader ? 12 : 10)
+    .text(String(text ?? ''), x + cellPadding, y + cellPadding, {
+      width: width - cellPadding * 2,
+      height: height - cellPadding * 2,
+      align: 'left',
+    });
   };
 
   // Draw header row

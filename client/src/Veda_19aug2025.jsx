@@ -7,7 +7,7 @@ import { PanelLeft, X, Settings } from 'lucide-react';
 import * as htmlToImage from 'html-to-image';
 
 
-// Define a custom markdown component for rendering code blocks
+// Define a custom markdown component for rendering tables
 const components = {
   code({ node, inline, className, children, ...props }) {
     const match = /language-(\w+)/.exec(className || '');
@@ -21,69 +21,51 @@ const components = {
       </code>
     );
   },
-};
-
-// New custom component for rendering the data table
-const TableComponent = React.memo(({ data }) => {
-  if (!data || data.length === 0) {
-    return <div style={{ color: '#aaa', padding: '10px' }}>No data to display.</div>;
-  }
-
-  const headers = Object.keys(data[0]);
-
-  return (
-    <div className="table-container">
-      <table
+  table({ node, ...props }) {
+    return (
+      <div className="table-container">
+        <table
+          style={{
+            borderCollapse: 'collapse',
+            width: '100%',
+            minWidth: '600px',
+          }}
+          {...props}
+        />
+      </div>
+    );
+  },
+  th({ node, ...props }) {
+    return (
+      <th
         style={{
-          borderCollapse: 'collapse',
-          width: '100%',
-          minWidth: '600px',
+          border: '1px solid #ddd',
+          padding: '5px',
+          backgroundColor: '#0e639c',
+          color: 'white',
+          textAlign: 'left',
+          whiteSpace: 'nowrap',
+          fontSize: '0.8rem',
         }}
-      >
-        <thead>
-          <tr>
-            {headers.map((header) => (
-              <th
-                key={header}
-                style={{
-                  border: '1px solid #ddd',
-                  padding: '5px',
-                  backgroundColor: '#0e639c',
-                  color: 'white',
-                  textAlign: 'left',
-                  whiteSpace: 'nowrap',
-                  fontSize: '0.8rem',
-                }}
-              >
-                {header}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.slice(0, 10).map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {headers.map((header) => (
-                <td
-                  key={`${rowIndex}-${header}`}
-                  style={{
-                    border: '1px solid #ddd',
-                    padding: '5px',
-                    textAlign: 'left',
-                    whiteSpace: 'nowrap',
-                    fontSize: '0.8rem',
-                  }}
-                >
-                  {typeof row[header] === 'object' ? JSON.stringify(row[header]) : String(row[header])}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-});
+        {...props}
+      />
+    );
+  },
+  td({ node, ...props }) {
+    return (
+      <td
+        style={{
+          border: '1px solid #ddd',
+          padding: '5px',
+          textAlign: 'left',
+          whiteSpace: 'nowrap',
+          fontSize: '0.8rem',
+        }}
+        {...props}
+      />
+    );
+  },
+};
 
 const LeftPanel = ({
   isPanelOpen,
@@ -167,7 +149,15 @@ const LeftPanel = ({
         </div>
         <button
           onClick={resetSliders}
-          className="button-primary"
+          style={{
+            backgroundColor: '#06445eff',
+            color: '#d4d4d4',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: 'pointer',
+            marginTop: '8px'
+          }}
         >
           Reset Sliders
         </button>
@@ -391,12 +381,6 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
   const [selectedYAxis, setSelectedYAxis] = useState(message.selectedYAxis || '');
   const [selectedAggregation, setSelectedAggregation] = useState(message.selectedAggregation || 'count');
   const [currentGraphData, setCurrentGraphData] = useState(message.currentGraphData || null);
-  // Replaced hardcoded filters with a state for a generic array of filters
-  const [filters, setFilters] = useState(message.filters || []);
-  
-  // New state to hold the filtered data
-  const [filteredData, setFilteredData] = useState(message.filteredData || message.tableData);
-
 
   const excelData = message.tableData;
   const hasTableData = excelData && excelData.length > 0;
@@ -418,67 +402,15 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
   }, [excelData]);
 
 
-  // New function to filter the data based on user input
-  const applyFilters = (data, filters) => {
-      let filtered = data;
-      if (filters.length > 0) {
-          filtered = filtered.filter(item => {
-              return filters.every(filter => {
-                  const columnValue = item[filter.column];
-                  const filterValue = filter.value;
-                  const operator = filter.operator;
-
-                  if (columnValue === undefined || filterValue === '') {
-                      // Skip filtering if column doesn't exist or value is empty
-                      return true;
-                  }
-
-                  switch (operator) {
-                      case 'equals':
-                          return String(columnValue).toLowerCase() === String(filterValue).toLowerCase();
-                      case 'not-equals':
-                          return String(columnValue).toLowerCase() !== String(filterValue).toLowerCase();
-                      case 'contains':
-                          return String(columnValue).toLowerCase().includes(String(filterValue).toLowerCase());
-                      case 'greater-than':
-                          return Number(columnValue) > Number(filterValue);
-                      case 'less-than':
-                          return Number(columnValue) < Number(filterValue);
-                      default:
-                          return true;
-                  }
-              });
-          });
-      }
-      return filtered;
-  };
-  
-  // New function to handle the "Apply Filters" button click
-  const handleApplyFilters = () => {
-    const newData = applyFilters(excelData, filters);
-    setFilteredData(newData);
-    // Update the message state with the new filtered data and switch to table view
-    onUpdateMessage({
-      ...message,
-      filters,
-      filteredData: newData,
-      viewMode: 'table'
-    });
-  };
-
-  const aggregateAndGenerateGraph = () => {
-    if (!selectedXAxis || !selectedYAxis) {
-      alert('Please select both X and Y axis columns.');
-      return;
-    }
-
+  // New function to aggregate data before graphing
+  const aggregateData = (data, xAxisKey, yAxisKey, aggregationType) => {
     const aggregatedMap = new Map();
-    (filteredData || excelData).forEach(item => { // Use filteredData if available, otherwise original
-      const xValue = item[selectedXAxis];
-      const yValue = typeof item[selectedYAxis] === 'number' ? item[selectedYAxis] : 0;
+    data.forEach(item => {
+      const xValue = item[xAxisKey];
+      const yValue = typeof item[yAxisKey] === 'number' ? item[yAxisKey] : 0;
 
       if (!aggregatedMap.has(xValue)) {
-        switch (selectedAggregation) {
+        switch (aggregationType) {
           case 'count':
             aggregatedMap.set(xValue, 0);
             break;
@@ -499,7 +431,7 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
         }
       }
 
-      switch (selectedAggregation) {
+      switch (aggregationType) {
         case 'count':
           aggregatedMap.set(xValue, aggregatedMap.get(xValue) + 1);
           break;
@@ -524,23 +456,33 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
     const labels = Array.from(aggregatedMap.keys());
     const values = labels.map(label => {
       const val = aggregatedMap.get(label);
-      if (selectedAggregation === 'average') {
+      if (aggregationType === 'average') {
         return val.count > 0 ? val.sum / val.count : 0;
       }
       return val;
     });
 
+    return { labels, data: values };
+  };
+
+  const handleGenerateGraph = () => {
+    if (!selectedXAxis || !selectedYAxis) {
+      alert('Please select both X and Y axis columns.');
+      return;
+    }
+
+    const { labels, data } = aggregateData(excelData, selectedXAxis, selectedYAxis, selectedAggregation);
+
     const newGraphData = {
       type: selectedGraphType,
       labels: labels,
-      data: values,
+      data: data,
       title: `${selectedAggregation.charAt(0).toUpperCase() + selectedAggregation.slice(1)} of ${selectedYAxis} by ${selectedXAxis}`,
     };
 
     setCurrentGraphData(newGraphData);
     setViewMode('graph');
     
-    // Update the message state with the new graph data and view mode
     onUpdateMessage({
       ...message,
       selectedGraphType,
@@ -606,29 +548,6 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
       selectedAggregation
     });
   };
-  
-  // Functions for managing the new dynamic filters
-  const addFilter = () => {
-      setFilters([...filters, { column: availableColumns[0], operator: 'equals', value: '' }]);
-      onUpdateMessage({ ...message, filters: [...filters, { column: availableColumns[0], operator: 'equals', value: '' }] });
-  };
-
-  const removeFilter = (indexToRemove) => {
-      const newFilters = filters.filter((_, index) => index !== indexToRemove);
-      setFilters(newFilters);
-      onUpdateMessage({ ...message, filters: newFilters });
-  };
-
-  const updateFilter = (indexToUpdate, key, value) => {
-      const newFilters = filters.map((filter, index) => {
-          if (index === indexToUpdate) {
-              return { ...filter, [key]: value };
-          }
-          return filter;
-      });
-      setFilters(newFilters);
-      onUpdateMessage({ ...message, filters: newFilters });
-  };
 
 
   return (
@@ -656,108 +575,57 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
         </select>
 
         <label htmlFor={`agg-select-${message.id}`}>Aggregation:</label>
-        <select id={`agg-select-${message.id}`} value={selectedAggregation} onChange={(e) => handleDropdownChange(setSelectedYAxis, e.target.value)}>
+        <select id={`agg-select-${message.id}`} value={selectedAggregation} onChange={(e) => handleDropdownChange(setSelectedAggregation, e.target.value)}>
           <option value="count">Count</option>
           <option value="sum">Sum</option>
           <option value="average">Average</option>
           <option value="minimum">Minimum</option>
           <option value="maximum">Maximum</option>
         </select>
-        </div>
-        
-        {/* Dynamic Filter Section */}
-        <hr style={{ borderTop: '1px solid #444' }} />
-        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>Filter Data (Optional)</h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {filters.map((filter, index) => (
-                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <select
-                        value={filter.column}
-                        onChange={(e) => updateFilter(index, 'column', e.target.value)}
-                        style={{ flexShrink: 0 }}
-                    >
-                        {availableColumns.map(col => (
-                            <option key={col} value={col}>{col}</option>
-                        ))}
-                    </select>
-                    <select
-                        value={filter.operator}
-                        onChange={(e) => updateFilter(index, 'operator', e.target.value)}
-                        style={{ flexShrink: 0 }}
-                    >
-                        <option value="equals">equals</option>
-                        <option value="not-equals">not equals</option>
-                        <option value="contains">contains</option>
-                        <option value="greater-than">greater than</option>
-                        <option value="less-than">less than</option>
-                    </select>
-                    <input
-                        type="text"
-                        value={filter.value}
-                        onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                        placeholder="Enter value"
-                        style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#1e1e1e', color: '#d4d4d4', flexGrow: 1 }}
-                    />
-                    <button onClick={() => removeFilter(index)} className="button-icon">
-                        <X size={16} />
-                    </button>
-                </div>
-            ))}
-            <button onClick={addFilter} className="button-primary" style={{ flexGrow: '1' }}>
-                + Add Filter
-            </button>
-        </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-          <button onClick={handleApplyFilters} className="button-primary">Apply Filters</button>
-          <button onClick={aggregateAndGenerateGraph} className="button-primary">Generate Graph</button>
-          {currentGraphData && (
-            <>
-              <button onClick={handleToggleView} className="button-primary">
-                {viewMode === 'graph' ? 'Show Table' : 'Show Graph'}
-              </button>
-              {viewMode === 'graph' && (
-                <button
-                  onClick={handleSaveGraph}
-                  className="button-primary"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  <span>Save Graph</span>
-                </button>
-              )}
-            </>
-          )}
-        </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
-         <button 
-              onClick={() => onDownloadFile('excel', excelData)} 
-              className="button-primary"
+        <button onClick={handleGenerateGraph} style={{ minWidth: '150px' }}>Generate Graph</button>
+        {currentGraphData && (
+          <>
+            <button onClick={handleToggleView} style={{ minWidth: '150px' }}>
+              {viewMode === 'graph' ? 'Show Table' : 'Show Graph'}
+            </button>
+            {viewMode === 'graph' && (
+              <button
+                onClick={handleSaveGraph}
+                style={{
+                  minWidth: '150px',
+                  backgroundColor: '#1177d1',
+                  color: '#fff',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
               >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <path d="M14 2v6h6M16 13h-4m0 4h-4m4-8h-4"></path>
-              </svg>
-              <span>Download Excel</span>
-          </button>
-          <button onClick={() => onDownloadFile('csv', excelData)} className="button-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <path d="M14 2v6h6M16 13h-4m0 4h-4m4-8h-4"></path>
-            </svg>
-            <span>Download CSV</span>
-          </button>
-          <button onClick={() => onDownloadFile('pdf', excelData)} className="button-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e04e4e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <path d="M14 2v6h6M10 13a2 2 0 0 1 2 2a2 2 0 0 1-2 2h-2v-4h2a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>Download PDF</span>
-          </button>
-        </div>
+                ⬇️ Save Graph
+              </button>
+            )}
+          </>
+        )}
+      </div>
+      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+       <button 
+            onClick={() => onDownloadFile('excel', excelData)} 
+            style={{ fontSize: "15px", fontFamily: "Arial, sans-serif" }}
+            >
+            {/* <img 
+                src="client/src/icons/excel_1.jpeg" 
+                alt="Excel icon" 
+                style={{ width: "20px", height: "20px", marginRight: "8px" }} 
+            /> */}
+            ⬇️ Download Excel
+        </button>
+        <button onClick={() => onDownloadFile('csv', excelData)}>⬇️ Download CSV</button>
+        <button onClick={() => onDownloadFile('pdf', excelData)}>⬇️ Download PDF</button>
+      </div>
       {viewMode === 'graph' && currentGraphData && (
         <div ref={graphRef}>
           {currentGraphData.type === 'bar' ? (
@@ -916,7 +784,10 @@ export default function App() {
                 tableData = allData;
               }
 
-              currentResponseContent = narrationText ? `📝 ${narrationText}` : '';
+              currentResponseContent = jsonToMarkdownTable(allData, 10);
+              if (narrationText) {
+                currentResponseContent += `\n\n📝 ${narrationText}`;
+              }
 
             } catch (err) {
               console.warn('⚠️ JSON parse error:', err, line);
@@ -1202,51 +1073,25 @@ export default function App() {
           color: #777;
           cursor: not-allowed;
         }
-        .button-primary {
-          /* Slimmed down padding */
-          padding: 8px 16px;
-          font-size: 0.95rem; /* Slightly smaller font for a slimmer look */
-          border-radius: 6px; /* Slightly smaller border radius */
-          border: 1px solid #084c75;
-          background: linear-gradient(180deg, #1177d1 0%, #0e639c 100%);
+        button {
+          padding: 0 24px;
+          font-size: 1rem;
+          border-radius: 6px;
+          border: none;
+          background-color: #0e639c;
           color: white;
           cursor: pointer;
           user-select: none;
-          font-weight: 500;
-          /* Removed min-width for flexibility */
-          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-          transition: all 0.2s ease;
+          min-width: 100px;
+          transition: background-color 0.2s ease;
           flex-shrink: 0;
-          display: flex;
-          align-items: center;
         }
-        .button-primary:hover:not(:disabled) {
-          background: linear-gradient(180deg, #1283e3 0%, #1177d1 100%);
-          transform: translateY(-2px);
-          box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        button:hover:not(:disabled) {
+          background-color: #1177d1;
         }
-        .button-primary:disabled {
-          background: #3a3d41;
-          border-color: #333;
+        button:disabled {
+          background-color: #3a3d41;
           cursor: not-allowed;
-          box-shadow: none;
-          opacity: 0.7;
-          transform: none;
-        }
-        .button-icon {
-            background: none;
-            border: none;
-            color: #d4d4d4;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: color 0.2s;
-            padding: 4px;
-            border-radius: 4px;
-        }
-        .button-icon:hover {
-            color: #0e639c;
         }
         
         .message {
@@ -1511,25 +1356,11 @@ export default function App() {
                     </div>
                   )}
 
-                  {msg.content && (
-                    <ReactMarkdown
-                      children={msg.content}
-                      remarkPlugins={[remarkGfm]}
-                      components={components}
-                    />
-                  )}
-                  
-                  {isTableMessage && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
-                      <p style={{ fontSize: '0.9rem', color: '#ccc' }}>
-                        Displaying data. You can filter the table or generate a graph below.
-                      </p>
-                      <TableComponent data={msg.filteredData || msg.tableData} />
-                      <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '6px' }}>
-                        Showing {msg.filteredData ? msg.filteredData.length : msg.tableData.length} rows. Full data available in downloads below.
-                      </p>
-                    </div>
-                  )}
+                  <ReactMarkdown
+                    children={msg.content}
+                    remarkPlugins={[remarkGfm]}
+                    components={components}
+                  />
 
                   {!isUser && !isTableMessage && (
                     <button
@@ -1544,6 +1375,11 @@ export default function App() {
                   {!isUser && msg.responseTime && (
                     <div className="response-time">
                       Response time: {msg.responseTime}s
+                    </div>
+                  )}
+                  {isTableMessage && (
+                    <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '6px' }}>
+                      Showing only first 10 rows. Full data available in downloads below.
                     </div>
                   )}
                   {isTableMessage && (
@@ -1573,14 +1409,8 @@ export default function App() {
                 components={components}
               />
               {currentStreamingMessage.tableData && currentStreamingMessage.tableData.length > 0 && (
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '10px' }}>
-                    <p style={{ fontSize: '0.9rem', color: '#ccc' }}>
-                        Displaying data. You can filter the table or generate a graph below.
-                    </p>
-                    <TableComponent data={currentStreamingMessage.filteredData || currentStreamingMessage.tableData} />
-                    <p style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '6px' }}>
-                        Showing {currentStreamingMessage.filteredData ? currentStreamingMessage.filteredData.length : currentStreamingMessage.tableData.length} rows. Full data available in downloads below.
-                    </p>
+                <div style={{ fontSize: '0.8rem', color: '#aaa', marginTop: '6px' }}>
+                  Showing only first 10 rows. Full data available in downloads below.
                 </div>
               )}
             </div>
@@ -1601,7 +1431,7 @@ export default function App() {
           disabled={loading}
           rows={3}
         />
-        <button type="submit" className="button-primary" style={{ minWidth: '100px' }} disabled={loading}>
+        <button type="submit" disabled={loading}>
           {loading ? 'Loading...' : 'Send'}
         </button>
       </form>

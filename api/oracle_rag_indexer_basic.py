@@ -10,7 +10,7 @@ ORACLE_USER = os.getenv("ORACLE_USER")
 ORACLE_PASSWORD = os.getenv("ORACLE_PASSWORD")
 TARGET_SCHEMA = os.getenv("TARGET_SCHEMA")
 EMBED_BACKEND = os.getenv("EMBED_BACKEND", "sbert").lower()
-LOCAL_MODEL_PATH = os.getenv("SBERT_MODEL", "/Users/naveengupta/veda-chatbot/api/local_all-MiniLM-L6-v2")
+LOCAL_MODEL_PATH = os.getenv('LOCAL_EMBED_MODEL')
 
 # Embedding loader
 def get_embedder():

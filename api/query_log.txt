@@ -1130,3 +1130,143 @@ SQL: SELECT * FROM sales
 [2025-08-19 17:52:43] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
 Intent: list all sales
 SQL: SELECT * FROM sales
+
+---
+[2025-08-20 12:32:32] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 12:33:59] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 12:34:36] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 12:37:34] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 12:40:35] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 12:43:04] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 12:58:13] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 13:32:26] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 13:33:53] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:03:44] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:04:50] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:14:20] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:16:21] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:21:44] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:23:54] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:24:01] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all employees
+SQL: SELECT * FROM user_tables
+
+---
+[2025-08-20 14:27:41] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:29:07] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all employees
+SQL: SELECT * FROM user_tables
+
+---
+[2025-08-20 14:56:52] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 14:58:19] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-20 19:01:08] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-23 08:40:23] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-23 09:37:01] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-23 09:46:37] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-23 09:48:23] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-23 09:50:39] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-23 09:54:18] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales
+
+---
+[2025-08-23 10:19:45] IP: 127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15, Model: llama3.2:1b
+Intent: list all sales
+SQL: SELECT * FROM sales

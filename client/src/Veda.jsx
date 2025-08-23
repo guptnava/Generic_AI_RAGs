@@ -94,7 +94,13 @@ const LeftPanel = ({
   topP,
   setTopP,
   commandHistory,
-  onHistoryClick
+  onHistoryClick,
+  areFiltersVisible,
+  setAreFiltersVisible,
+  isGraphVisible,
+  setIsGraphVisible,
+  areDownloadsVisible,
+  setAreDownloadsVisible
 }) => {
   const resetSliders = () => {
     setTemperature(0.7);
@@ -171,6 +177,36 @@ const LeftPanel = ({
         >
           Reset Sliders
         </button>
+        <hr style={{ borderTop: '1px solid #444', margin: '16px 0' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: 'semibold' }}>Show Filters</span>
+                <input
+                  type="checkbox"
+                  checked={areFiltersVisible}
+                  onChange={(e) => setAreFiltersVisible(e.target.checked)}
+                  className="toggle-switch"
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: 'semibold' }}>Show Generate Graph</span>
+                <input
+                  type="checkbox"
+                  checked={isGraphVisible}
+                  onChange={(e) => setIsGraphVisible(e.target.checked)}
+                  className="toggle-switch"
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: 'semibold' }}>Show Downloads</span>
+                <input
+                  type="checkbox"
+                  checked={areDownloadsVisible}
+                  onChange={(e) => setAreDownloadsVisible(e.target.checked)}
+                  className="toggle-switch"
+                />
+              </div>
+        </div>
         <hr style={{ borderTop: '1px solid #444', margin: '16px 0' }} />
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '8px' }}>Command History</h3>
@@ -381,7 +417,7 @@ const LineGraphComponent = React.forwardRef(({ labels, data, title }, ref) => {
 
 
 // Component to handle graph and table options for a single message
-const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
+const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile, areFiltersVisible, isGraphVisible, areDownloadsVisible }) => {
   const graphRef = useRef(null);
 
   // Use state hooks for this specific message's data and options
@@ -614,9 +650,22 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
   };
 
   const removeFilter = (indexToRemove) => {
+      // Create the new array of filters
       const newFilters = filters.filter((_, index) => index !== indexToRemove);
+      
+      // Apply the new filters to the original data
+      const newFilteredData = applyFilters(excelData, newFilters);
+      
+      // Update local state
       setFilters(newFilters);
-      onUpdateMessage({ ...message, filters: newFilters });
+      setFilteredData(newFilteredData);
+      
+      // Update the parent message state
+      onUpdateMessage({
+          ...message,
+          filters: newFilters,
+          filteredData: newFilteredData,
+      });
   };
 
   const updateFilter = (indexToUpdate, key, value) => {
@@ -634,92 +683,106 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '20px', padding: '16px', backgroundColor: '#252526', borderRadius: '8px' }}>
       <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>Graph & View Options for this table</h4>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-        <label htmlFor={`graph-type-select-${message.id}`}>Type:</label>
-        <select id={`graph-type-select-${message.id}`} value={selectedGraphType} onChange={(e) => handleDropdownChange(setSelectedGraphType, e.target.value)}>
-          <option value="bar">Bar Chart</option>
-          <option value="line">Line Graph</option>
-        </select>
+      {areFiltersVisible && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+          <label htmlFor={`graph-type-select-${message.id}`}>Type:</label>
+          <select id={`graph-type-select-${message.id}`} value={selectedGraphType} onChange={(e) => handleDropdownChange(setSelectedGraphType, e.target.value)} disabled={!hasTableData}>
+            <option value="bar">Bar Chart</option>
+            <option value="line">Line Graph</option>
+          </select>
 
-        <label htmlFor={`x-axis-select-${message.id}`}>X-Axis (Group By):</label>
-        <select id={`x-axis-select-${message.id}`} value={selectedXAxis} onChange={(e) => handleDropdownChange(setSelectedXAxis, e.target.value)}>
-          {availableColumns.map(col => (
-            <option key={col} value={col}>{col}</option>
-          ))}
-        </select>
+          <label htmlFor={`x-axis-select-${message.id}`}>X-Axis (Group By):</label>
+          <select id={`x-axis-select-${message.id}`} value={selectedXAxis} onChange={(e) => handleDropdownChange(setSelectedXAxis, e.target.value)} disabled={!hasTableData}>
+            {availableColumns.map(col => (
+              <option key={col} value={col}>{col}</option>
+            ))}
+          </select>
 
-        <label htmlFor={`y-axis-select-${message.id}`}>Y-Axis (Aggregate):</label>
-        <select id={`y-axis-select-${message.id}`} value={selectedYAxis} onChange={(e) => handleDropdownChange(setSelectedYAxis, e.target.value)}>
-          {availableColumns.map(col => (
-            <option key={col} value={col}>{col}</option>
-          ))}
-        </select>
+          <label htmlFor={`y-axis-select-${message.id}`}>Y-Axis (Aggregate):</label>
+          <select id={`y-axis-select-${message.id}`} value={selectedYAxis} onChange={(e) => handleDropdownChange(setSelectedYAxis, e.target.value)} disabled={!hasTableData}>
+            {availableColumns.map(col => (
+              <option key={col} value={col}>{col}</option>
+            ))}
+          </select>
 
-        <label htmlFor={`agg-select-${message.id}`}>Aggregation:</label>
-        <select id={`agg-select-${message.id}`} value={selectedAggregation} onChange={(e) => handleDropdownChange(setSelectedYAxis, e.target.value)}>
-          <option value="count">Count</option>
-          <option value="sum">Sum</option>
-          <option value="average">Average</option>
-          <option value="minimum">Minimum</option>
-          <option value="maximum">Maximum</option>
-        </select>
+          <label htmlFor={`agg-select-${message.id}`}>Aggregation:</label>
+          <select id={`agg-select-${message.id}`} value={selectedAggregation} onChange={(e) => handleDropdownChange(setSelectedAggregation, e.target.value)} disabled={!hasTableData}>
+            <option value="count">Count</option>
+            <option value="sum">Sum</option>
+            <option value="average">Average</option>
+            <option value="minimum">Minimum</option>
+            <option value="maximum">Maximum</option>
+          </select>
         </div>
+      )}
         
         {/* Dynamic Filter Section */}
-        <hr style={{ borderTop: '1px solid #444' }} />
-        <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>Filter Data (Optional)</h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {filters.map((filter, index) => (
-                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <select
-                        value={filter.column}
-                        onChange={(e) => updateFilter(index, 'column', e.target.value)}
-                        style={{ flexShrink: 0 }}
-                    >
-                        {availableColumns.map(col => (
-                            <option key={col} value={col}>{col}</option>
-                        ))}
-                    </select>
-                    <select
-                        value={filter.operator}
-                        onChange={(e) => updateFilter(index, 'operator', e.target.value)}
-                        style={{ flexShrink: 0 }}
-                    >
-                        <option value="equals">equals</option>
-                        <option value="not-equals">not equals</option>
-                        <option value="contains">contains</option>
-                        <option value="greater-than">greater than</option>
-                        <option value="less-than">less than</option>
-                    </select>
-                    <input
-                        type="text"
-                        value={filter.value}
-                        onChange={(e) => updateFilter(index, 'value', e.target.value)}
-                        placeholder="Enter value"
-                        style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#1e1e1e', color: '#d4d4d4', flexGrow: 1 }}
-                    />
-                    <button onClick={() => removeFilter(index)} className="button-icon">
-                        <X size={16} />
-                    </button>
-                </div>
-            ))}
-            <button onClick={addFilter} className="button-primary" style={{ flexGrow: '1' }}>
-                + Add Filter
-            </button>
-        </div>
+      {areFiltersVisible && (
+        <>
+          <hr style={{ borderTop: '1px solid #444' }} />
+          <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 'bold' }}>Filter Data (Optional)</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {filters.map((filter, index) => (
+                  <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <select
+                          value={filter.column}
+                          onChange={(e) => updateFilter(index, 'column', e.target.value)}
+                          style={{ flexShrink: 0 }}
+                          disabled={!hasTableData}
+                      >
+                          {availableColumns.map(col => (
+                              <option key={col} value={col}>{col}</option>
+                          ))}
+                      </select>
+                      <select
+                          value={filter.operator}
+                          onChange={(e) => updateFilter(index, 'operator', e.target.value)}
+                          style={{ flexShrink: 0 }}
+                          disabled={!hasTableData}
+                      >
+                          <option value="equals">equals</option>
+                          <option value="not-equals">not equals</option>
+                          <option value="contains">contains</option>
+                          <option value="greater-than">greater than</option>
+                          <option value="less-than">less than</option>
+                      </select>
+                      <input
+                          type="text"
+                          value={filter.value}
+                          onChange={(e) => updateFilter(index, 'value', e.target.value)}
+                          placeholder="Enter value"
+                          disabled={!hasTableData}
+                          style={{ padding: '6px', borderRadius: '4px', border: '1px solid #444', backgroundColor: '#1e1e1e', color: '#d4d4d4', flexGrow: 1 }}
+                      />
+                      <button onClick={() => removeFilter(index)} className="button-icon" disabled={!hasTableData}>
+                          <X size={16} />
+                      </button>
+                  </div>
+              ))}
+              <button onClick={addFilter} className="button-primary" style={{ flexGrow: '1' }} disabled={!hasTableData}>
+                  + Add Filter
+              </button>
+          </div>
+        </>
+      )}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
-          <button onClick={handleApplyFilters} className="button-primary">Apply Filters</button>
-          <button onClick={aggregateAndGenerateGraph} className="button-primary">Generate Graph</button>
-          {currentGraphData && (
+          {areFiltersVisible && (
+            <button onClick={handleApplyFilters} className="button-primary" disabled={filters.length === 0 || !hasTableData}>Apply Filters</button>
+          )}
+          {isGraphVisible && (
+            <button onClick={aggregateAndGenerateGraph} className="button-primary" disabled={!selectedXAxis || !selectedYAxis || !hasTableData}>Generate Graph</button>
+          )}
+          {currentGraphData && isGraphVisible && (
             <>
-              <button onClick={handleToggleView} className="button-primary">
+              <button onClick={handleToggleView} className="button-primary" disabled={!currentGraphData}>
                 {viewMode === 'graph' ? 'Show Table' : 'Show Graph'}
               </button>
               {viewMode === 'graph' && (
                 <button
                   onClick={handleSaveGraph}
                   className="button-primary"
+                  disabled={!currentGraphData}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -732,10 +795,12 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
             </>
           )}
         </div>
+        {areDownloadsVisible && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', justifyContent: 'center' }}>
          <button 
               onClick={() => onDownloadFile('excel', excelData)} 
               className="button-primary"
+              disabled={!hasTableData}
               >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -743,14 +808,14 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
               </svg>
               <span>Download Excel</span>
           </button>
-          <button onClick={() => onDownloadFile('csv', excelData)} className="button-primary">
+          <button onClick={() => onDownloadFile('csv', excelData)} className="button-primary" disabled={!hasTableData}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <path d="M14 2v6h6M16 13h-4m0 4h-4m4-8h-4"></path>
             </svg>
             <span>Download CSV</span>
           </button>
-          <button onClick={() => onDownloadFile('pdf', excelData)} className="button-primary">
+          <button onClick={() => onDownloadFile('pdf', excelData)} className="button-primary" disabled={!hasTableData}>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e04e4e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                 <path d="M14 2v6h6M10 13a2 2 0 0 1 2 2a2 2 0 0 1-2 2h-2v-4h2a2 2 0 0 1 2 2z"></path>
@@ -758,7 +823,8 @@ const TableAndGraphOptions = ({ message, onUpdateMessage, onDownloadFile }) => {
             <span>Download PDF</span>
           </button>
         </div>
-      {viewMode === 'graph' && currentGraphData && (
+        )}
+      {viewMode === 'graph' && currentGraphData && isGraphVisible && (
         <div ref={graphRef}>
           {currentGraphData.type === 'bar' ? (
             <BarGraphComponent labels={currentGraphData.labels} data={currentGraphData.data} title={currentGraphData.title} />
@@ -805,6 +871,11 @@ export default function App() {
   const [topK, setTopK] = useState(50);
   const [topP, setTopP] = useState(0.9);
   const [commandHistory, setCommandHistory] = useState([]);
+  
+  // New state variables to hide/unhide UI elements
+  const [areFiltersVisible, setAreFiltersVisible] = useState(true);
+  const [isGraphVisible, setIsGraphVisible] = useState(true);
+  const [areDownloadsVisible, setAreDownloadsVisible] = useState(true);
   
   // New state to hold the in-progress streaming message
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState(null);
@@ -868,7 +939,7 @@ export default function App() {
           model,
           prompt: userMessage.content,
           mode: interactionMode,
-          stream: ['direct', 'database', 'langchain', 'langchainprompt', 'restful', 'embedded', 'embedded_narrated', 'generic_rag'].includes(interactionMode),
+          stream: ['direct', 'database', 'database1', 'langchain', 'langchainprompt', 'restful', 'embedded', 'embedded_narrated', 'generic_rag'].includes(interactionMode),
         }),
       });
 
@@ -884,7 +955,7 @@ export default function App() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
       
-      if (['database', 'langchainprompt', 'restful', 'embedded', 'embedded_narrated', 'generic_rag'].includes(interactionMode)) {
+      if (['database', 'langchainprompt', 'restful', 'embedded', 'embedded_narrated', 'generic_rag', 'database1'].includes(interactionMode)) {
         let buffer = '';
         let allData = [];
         let narrationText = null;
@@ -1214,7 +1285,7 @@ export default function App() {
           user-select: none;
           font-weight: 500;
           /* Removed min-width for flexibility */
-          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          box-shadow: 0 44px 10px rgba(0,0,0,0.2);
           transition: all 0.2s ease;
           flex-shrink: 0;
           display: flex;
@@ -1318,6 +1389,51 @@ export default function App() {
           font-weight: 600;
           color: #0e639c;
           user-select: none;
+        }
+        .toggle-switch {
+          position: relative;
+          display: inline-block;
+          width: 40px;
+          height: 24px;
+          cursor: pointer;
+        }
+        
+        .toggle-switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        
+        .toggle-switch span {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 24px;
+        }
+        
+        .toggle-switch span:before {
+          position: absolute;
+          content: "";
+          height: 16px;
+          width: 16px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        
+        .toggle-switch input:checked + span {
+          background-color: #0e639c;
+        }
+        
+        .toggle-switch input:checked + span:before {
+          transform: translateX(16px);
         }
 
         input[type="range"] {
@@ -1469,6 +1585,7 @@ export default function App() {
           >
             <option value="direct">Developer Assitant</option>
             <option value="database">Database - Direct Intent Routes</option>
+            <option value="database1">Database - Direct Intent embeded nomodel Routes</option>
             <option value="restful">API Assistant (Trained)</option>
             <option value="langchain">Database Assistant (Un-Trained)</option>
             <option value="langchainprompt">Database Assistant (Partially Trained)</option>
@@ -1492,6 +1609,12 @@ export default function App() {
           setTopP={setTopP}
           commandHistory={commandHistory}
           onHistoryClick={handleHistoryClick}
+          areFiltersVisible={areFiltersVisible}
+          setAreFiltersVisible={setAreFiltersVisible}
+          isGraphVisible={isGraphVisible}
+          setIsGraphVisible={setIsGraphVisible}
+          areDownloadsVisible={areDownloadsVisible}
+          setAreDownloadsVisible={setAreDownloadsVisible}
         />
         <main className="chat-scroll-area" aria-live="polite" aria-relevant="additions" tabIndex={-1}>
           {messages
@@ -1551,6 +1674,9 @@ export default function App() {
                       message={msg}
                       onUpdateMessage={handleUpdateMessage}
                       onDownloadFile={downloadFile}
+                      areFiltersVisible={areFiltersVisible}
+                      isGraphVisible={isGraphVisible}
+                      areDownloadsVisible={areDownloadsVisible}
                     />
                   )}
                 </div>
